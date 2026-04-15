@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ant-Gularity</title>
+    <link rel="stylesheet" href="public/style.css">
+    <!-- Chargement de Phaser via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.js"></script>
+    <script type="module" src="src/main.js" defer></script>
+</head>
+<body>
+    <button id="btn-open-mutations" style="display:none;">🧬 MUTATIONS (ADN: <span id="r-dna">0</span>)</button>
+
+    <div id="modal-mutations" style="display:none;" class="panel">
+        <h3>Arbre des Mutations (Inter-Parties)</h3>
+        <button class="close-btn" id="btn-close-mutations">X</button>
+        <div class="mutation-grid">
+            <button class="btn-mutation" data-mut="storageLimit" id="mut-storageLimit" data-cost="1">
+                Estomac Sans Fond (Limites Stockage x2)<br><span class="cost">1 ADN</span>
+            </button>
+            <button class="btn-mutation" data-mut="diet" id="mut-diet" data-cost="1">
+                Métabolisme Économe (Conso Nourriture ÷2)<br><span class="cost">1 ADN</span>
+            </button>
+            <button class="btn-mutation" data-mut="collection" id="mut-collection" data-cost="2">
+                Bras Robotiques (Récolte 🪨 et ⚙️ x2)<br><span class="cost">2 ADN</span>
+            </button>
+            <button class="btn-mutation" data-mut="twins" id="mut-twins" data-cost="2">
+                Ponte Gémellaire (Chaque ponte donne +2 🐜)<br><span class="cost">2 ADN</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="game-container"></div>
+    <div id="ui-container">
+        <h1 class="game-title">ANT-GULARITY <span id="prestige-display" style="font-size:14px;color:#ffbbff;vertical-align:middle;margin-left:10px;"></span></h1>
+        
+        <div id="top-hud" class="panel">
+            <div class="resource-bar" style="margin-bottom: 0;">
+                <span title="Population Totale">🐜 <span id="r-ants">0</span><span id="rt-ants" class="rate"></span> Alc: <span id="r-alcoves">3</span></span>
+                <span title="Nourriture">🍎 <span id="r-food">10</span><span id="rt-food" class="rate"></span>/<span id="c-food">125</span></span>
+                <span title="Matériaux">🪨 <span id="r-mat">0</span><span id="rt-mat" class="rate"></span>/<span id="c-mat">125</span></span>
+            </div>
+        </div>
+
+        <div id="dashboard" class="panel">
+            <h3>Distribution des Rôles</h3>
+            
+            <div class="role-grid">
+                <div class="role-row">
+                    <span class="role-name">Oisives (Dispo)</span>
+                    <span class="role-count" id="role-unassigned">0</span>
+                    <div class="role-controls"></div>
+                </div>
+                <div class="role-row">
+                    <span class="role-name" title="Produisent +1 🍎 / tick">Agricultrices <span class="prod">+1🍎</span></span>
+                    <span class="role-count" id="role-farmers">0</span>
+                    <div class="role-controls">
+                        <button class="btn-role btn-role-10" data-role="farmers" data-val="-10" style="display:none;">-10</button>
+                        <button class="btn-role" data-role="farmers" data-val="-1">-</button>
+                        <button class="btn-role" data-role="farmers" data-val="1">+</button>
+                        <button class="btn-role btn-role-10" data-role="farmers" data-val="10" style="display:none;">+10</button>
+                    </div>
+                </div>
+                <div class="role-row">
+                    <span class="role-name" title="Produisent +1 🪨 / tick">Exploratrices <span class="prod">+1🪨</span></span>
+                    <span class="role-count" id="role-explorers">0</span>
+                    <div class="role-controls">
+                        <button class="btn-role btn-role-10" data-role="explorers" data-val="-10" style="display:none;">-10</button>
+                        <button class="btn-role" data-role="explorers" data-val="-1">-</button>
+                        <button class="btn-role" data-role="explorers" data-val="1">+</button>
+                        <button class="btn-role btn-role-10" data-role="explorers" data-val="10" style="display:none;">+10</button>
+                    </div>
+                </div>
+                <div class="role-row">
+                    <span class="role-name">Guerrières</span>
+                    <span class="role-count" id="role-warriors">0</span>
+                    <div class="role-controls">
+                        <button class="btn-role btn-role-10" data-role="warriors" data-val="-10" style="display:none;">-10</button>
+                        <button class="btn-role" data-role="warriors" data-val="-1">-</button>
+                        <button class="btn-role" data-role="warriors" data-val="1">+</button>
+                        <button class="btn-role btn-role-10" data-role="warriors" data-val="10" style="display:none;">+10</button>
+                    </div>
+                </div>
+                <div class="role-row">
+                    <span class="role-name" title="Produisent +1 🧬 / tick">Laborantines <span class="prod" style="color:#d8b2d8">+1🧬</span></span>
+                    <span class="role-count" id="role-scientists">0</span>
+                    <div class="role-controls">
+                        <button class="btn-role btn-role-10" data-role="scientists" data-val="-10" style="display:none;">-10</button>
+                        <button class="btn-role" data-role="scientists" data-val="-1">-</button>
+                        <button class="btn-role" data-role="scientists" data-val="1">+</button>
+                        <button class="btn-role btn-role-10" data-role="scientists" data-val="10" style="display:none;">+10</button>
+                    </div>
+                </div>
+            </div>
+            <div class="hint">Coût Ponte: 2🍎 | Conso: 1🍎 / 10 fourmis</div>
+        </div>
+
+        <div id="feed-container" class="panel">
+            <h3>Registre Colonial</h3>
+            <div id="feed-log"></div>
+        </div>
+
+        <div id="laboratory" class="panel">
+            <h3>Arbre Technologique</h3>
+            
+            <div class="resource-bar">
+                <span title="Phéromones">Phéromones: <span id="r-phero" style="color:#d8b2d8; font-size:16px;">0</span><span id="rt-phero" class="rate"></span> 🧬</span>
+            </div>
+            
+            <div class="tech-grid">
+                <div class="tech-tier">Tier 1 : Biologie</div>
+                <button class="btn-tech" data-tech="tunnels" id="tech-tunnels">
+                    Tunnels Renforcés (+3 Alcôves)<br><span class="cost">50 🧬</span>
+                </button>
+                <button class="btn-tech" data-tech="estomac" id="tech-estomac">
+                    Estomac Social (-20% Conso)<br><span class="cost">100 🧬</span>
+                </button>
+                
+                <div class="tech-tier">Tier 2 : Cerveau</div>
+                <button class="btn-tech" data-tech="chitine" id="tech-chitine">
+                    Chimie Chitine (Agri. +2🍎)<br><span class="cost">250 🧬</span>
+                </button>
+                <button class="btn-tech" data-tech="architecture" id="tech-architecture">
+                    Arch. Brutaliste (Explo. +2🪨)<br><span class="cost">400 🧬</span>
+                </button>
+                
+                <div class="tech-tier">Tier 3 : Industrie</div>
+                <button class="btn-tech" data-tech="interface" id="tech-interface">
+                    Interface Neuronale (Sc. x3)<br><span class="cost">1000 🧬</span>
+                </button>
+                <button class="btn-tech" data-tech="wifi" id="tech-wifi">
+                    Piratage Wi-Fi (Explo ⚙️, Hive +⚡)<br><span class="cost">2000 🧬</span>
+                </button>
+                
+                <div class="tech-tier" style="margin-top:10px; color: #ff00ff;">Tier 4 : Transcendance</div>
+                <button class="btn-tech" data-tech="singularity" id="tech-singularity" style="border-color:#ff00ff; border-width: 2px;">
+                    ANT-GULARITY (Prestige)<br><span class="cost" style="color:#ffbbff;">5000 🧬, 100 ⚙️, 100 ⚡</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="industry" class="panel">
+        <h3>Complexe Industriel</h3>
+
+        <div class="stealth-meter" title="Si la discrétion tombe à 0, les Humains vous écrasent !">
+            Discrétion (Furtivité) : <span id="r-stealth">100</span>%
+            <div class="stealth-bar-bg">
+                <div id="stealth-fill" style="width: 100%;"></div>
+            </div>
+        </div>
+        
+        <div class="buildings-grid">
+            <button class="btn-build" data-build="nurseries" id="build-nurseries">
+                Nurserie Royale (Pond 1🐜/t, Coût 2🍎)<br>
+                <span class="cost">50 🍎, 50 🪨</span> | Possédé: <span id="b-nurseries" style="color:#00ff00; font-weight:bold;">0</span>
+            </button>
+            <button class="btn-build" data-build="factories" id="build-factories">
+                Usine Phéromones (+5 🧬, -1 Furtivité/t)<br>
+                <span class="cost">100 🪨</span> | Possédé: <span id="b-factories" style="color:#00ff00; font-weight:bold;">0</span>
+            </button>
+            <button class="btn-build" data-build="hiveMinds" id="build-hiveMinds">
+                Hive-Mind Lab (+2 ⚡ Wi-Fi, -2 Furtivité/t)<br>
+                <span class="cost">500 🧬, 200 🪨</span> | Possédé: <span id="b-hives" style="color:#00ff00; font-weight:bold;">0</span>
+            </button>
+        </div>
+
+        <div class="resource-bar" style="margin-top: 15px;">
+            <span title="Acier">⚙️ <span id="r-steel">0</span><span id="rt-steel" class="rate"></span></span>
+            <span title="Énergie">⚡ <span id="r-energy">0</span><span id="rt-energy" class="rate"></span></span>
+        </div>
+    </div>
+    
+    <button id="btn-hard-reset" style="position: absolute; bottom: 10px; right: 10px; background-color: #3b1111; color: #ffaaaa; border: 1px solid #ff4444; padding: 5px 10px; cursor: pointer; border-radius: 3px; font-family: inherit; font-size: 11px; pointer-events: auto; z-index: 100;">
+        Réinitialisation Complète
+    </button>
+</div>
+</body>
+</html>
