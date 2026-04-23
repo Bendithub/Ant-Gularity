@@ -87,7 +87,7 @@ export default class GameManager {
         if (res.materials > caps.materials) { res.materials = caps.materials; matSurplus = true; }
 
         // 2. Consommation
-        let consumption = (res.ants * 0.1) * consumptionReduction;
+        let consumption = (Math.max(0, res.ants - 1) * 0.1) * consumptionReduction;
         consumption = Math.ceil(consumption);
         res.food -= consumption;
 
