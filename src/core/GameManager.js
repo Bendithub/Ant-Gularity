@@ -115,13 +115,17 @@ export default class GameManager {
 
         // 4. Discrétion et Industrialisation
         let stealthDamage = res.buildings.factories * 1 + res.buildings.hiveMinds * 2;
-        if (stealthDamage > 0) {
-            res.stealth -= stealthDamage;
-            if (res.stealth <= 0) {
-                this.triggerHumanAttack(res);
-                eventTriggered = true;
-                res.stealth = 100;
-            }
+        let stealthRegen = res.roles.warriors * 5; // Augmented to better compensate
+        
+        res.stealth += stealthRegen;
+        res.stealth -= stealthDamage;
+        
+        if (res.stealth > 100) {
+            res.stealth = 100;
+        } else if (res.stealth <= 0) {
+            this.triggerHumanAttack(res);
+            eventTriggered = true;
+            res.stealth = 100;
         }
 
         this.lastRates = {
